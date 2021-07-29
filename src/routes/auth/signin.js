@@ -13,18 +13,23 @@ const signin = (app, connection) => {
                     VALUES ($1, $2)`;
 
 		try {
-			const user = await connection.query(userExistsSQL, [email]);
+			const result = await connection.query(userExistsSQL, [email]);
 			const token = uuid();
-			const hash = user.rows[0].hashed_password;
+			const user = result.rows[0];
+			const hash = user.hashed_password;
 
-			if (user.rows.length === 0 || !bcrypt.compareSync(password, hash)) {
+			if (
+				result.rows.length === 0 ||
+				!bcrypt.compareSync(password, hash)
+			) {
 				return res.sendStatus(400);
 			}
 
-			await connection.query(sessionSQL, [user.rows[0].id, token]);
+			await connection.query(sessionSQL, [user.id, token]);
 
+			delete user.hashed_password;
 			res.send({
-				user: user.rows[0],
+				user,
 				token,
 			});
 		} catch (err) {
