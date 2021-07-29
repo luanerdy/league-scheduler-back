@@ -13,10 +13,10 @@ const signup = (app, connection) => {
                     VALUES ($1, $2, $3, $4, $5)`;
     
         try {
-            const exists = connection.query(userExistsSQL, [email]);
-            if(exists.rows.length === 0) return res.sendStatus(400);
+            const exists = await connection.query(userExistsSQL, [email]);
+            if(exists.rows.length > 0) return res.sendStatus(400);
 
-            await connection.query(sql, [name, nickname, email, avatar, hash]);
+            await connection.query(insertSQL, [name, nickname, email, avatar, hash]);
             res.sendStatus(201);
         } catch(err) {
             console.log(err);
